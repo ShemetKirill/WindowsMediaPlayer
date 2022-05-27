@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using mediaplayer;
@@ -21,41 +22,42 @@ namespace Mediaplayer
 
         private void button1_Click(object sender, EventArgs e)
         {
-            using(OpenFileDialog openFileDialog = new OpenFileDialog(){Multiselect = true, ValidateNames = true})
-            
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                List<MediaFile> files = new List<MediaFile>();
-                foreach (string fileName in openFileDialog.FileNames)
+            using (OpenFileDialog openFileDialog = new OpenFileDialog() { Multiselect = true, ValidateNames = true })
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    FileInfo fileInfo = new FileInfo(fileName);
-                    files.Add(new MediaFile()
-                        {FileName = Path.GetFileNameWithoutExtension(fileInfo.FullName), Path = fileInfo.FullName});
+                    List<MediaFile> files = new List<MediaFile>();
+                    foreach (string fileName in openFileDialog.FileNames)
+                    {
+                        FileInfo fileInfo = new FileInfo(fileName);
+                        files.Add(new MediaFile()
+                        { FileName = Path.GetFileNameWithoutExtension(fileInfo.FullName), Path = fileInfo.FullName });
+                    }
+                    listFile.DataSource = files;
+                    listFile.ValueMember = "Path";
+                    listFile.DisplayMember = "FileName";
                 }
-                listFile.DataSource=files;
-                listFile.ValueMember = "Path";
-                listFile.DisplayMember = "FileName";
-            }
-
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             MediaFile file = listFile.SelectedItem as MediaFile;
-            if (file != null)
-            {
-                WMP.URL = file.Path;
-                WMP.Ctlcontrols.play();
-                
-            }
 
+            Task.Run(() =>
+            {
+                if (file != null)
+                {
+                    WMP.URL = file.Path;
+                    WMP.Ctlcontrols.play();
+                }
+            });
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 1000000; i++)
             {
-                richTextBox2.Text= i.ToString();
+                richTextBox2.Text = i.ToString();
+                Application.DoEvents();
             }
         }
     }
